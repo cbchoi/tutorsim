@@ -19,49 +19,29 @@ class Assessor(BehaviorModelExecutor):
         self.insert_input_port("assess")
         self.insert_output_port("done")
 
-
+    def assess_daily_commits(self):
+        pass
     def process_daily_commits(self, _id, _repo, _date):
-        print(_id)
-        print(_repo)
-        print(_date)
+        print(f"Processing {_id}'s {_date} commit logs")
         
+        result = None
         os.chdir(_id)
         splitedItems = [x for x in _repo.split('/') if x]
         sol_dir = splitedItems[-1].split('.')[0]
         if os.path.exists(sol_dir):
             os.chdir(sol_dir)
-            result = sp.run(['git', 'log', '--pretty=format:\'\"%cn, %cd, %s\"\'',
-                    '--stat','--after=', "-".join([_date[0:4], _date[4:6], _date[6:]]) + " 00\:00\:00"], stdout = sp.PIPE)
             
-    #mv ./*.log "../assessment/"
-            print("-".join([_date[0:4], _date[4:6], _date[6:]]))
-            #sp.run([ "git", "pull", _repo])
             os.chdir("..")
         else:
-            #sp.run([ "git", "clone", _repo])
-            # TODO: Exception Handling
             pass
 
         os.chdir('..')
         print(os.getcwd())
-        f = open("/".join([".", "assessment",_date, _id + ".log"]), "w")
-        #f.write(result.stdout)
-        print(result.stdout.decode("utf-8") )
-        f.close()
 
     def ext_trans(self,port, msg):
         data = msg.retrieve()
-        if not os.path.exists('assessment'): # Check assessment folder
-           os.makedirs('assessment')
-
-        splitedItem = data[0].split(', ')
-        check_date = datetime.datetime.now().strftime("%Y%m%d")
-
-        if not os.path.exists('assessment/' + check_date): # Check assessment folder
-            os.makedirs('assessment/'+ check_date)
-
-        self.process_daily_commits(splitedItem[0], splitedItem[1], check_date)
-
+        print(data[0])
+        
     def output(self):
         
         return None
