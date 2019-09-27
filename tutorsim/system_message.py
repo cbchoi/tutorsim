@@ -11,6 +11,9 @@ class SysMessage(SysObject):
     def insert(self, msg):
         self._msg_list.append(msg)
 
+    def extend(self, _list):
+        self._msg_list.extend(_list)
+
     def retrieve(self):
         return self._msg_list
 

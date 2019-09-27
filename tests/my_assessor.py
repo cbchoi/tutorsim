@@ -6,6 +6,7 @@ from tutorsim.definition import *
 import os
 import subprocess as sp
 import datetime
+from pathlib import Path 
 
 class Assessor(BehaviorModelExecutor):
     def __init__(self, instance_time, destruct_time, name, engine_name):
@@ -21,27 +22,23 @@ class Assessor(BehaviorModelExecutor):
 
     def assess_daily_commits(self):
         pass
-    def process_daily_commits(self, _id, _repo, _date):
-        print(f"Processing {_id}'s {_date} commit logs")
+    def process_daily_commits(self, _id, eval_dir):
+        print(f"Evaluating {_id}'s commit logs")
         
-        result = None
-        os.chdir(_id)
-        splitedItems = [x for x in _repo.split('/') if x]
-        sol_dir = splitedItems[-1].split('.')[0]
-        if os.path.exists(sol_dir):
-            os.chdir(sol_dir)
-            
-            os.chdir("..")
-        else:
-            pass
-
-        os.chdir('..')
-        print(os.getcwd())
+        stu_log = eval_dir + "/" + _id + ".log"
+        with open(stu_log, "r") as f:
+            for line in f:
+                print(line)
 
     def ext_trans(self,port, msg):
-        data = msg.retrieve()
-        print(data[0])
-        
+        if port == "assess":
+            data = msg.retrieve()
+            #print(data)
+            home_dir = os.getcwd()
+            eval_dir = home_dir + "/assessment/" + data[2] # date
+            
+            self.process_daily_commits(data[0], eval_dir)
+
     def output(self):
         
         return None

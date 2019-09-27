@@ -19,13 +19,14 @@ class Processor(BehaviorModelExecutor):
         self.insert_input_port("process")
         self.insert_output_port("assess")
 
-        self._event_to_send = ""
+        self._event_to_send = None
 
     def process_student(self, _id, _date, _home):
         print(f"Processing {_id}'s {_date} commit logs")
         sp.run([ "git", "pull"])
         result = sp.run(['git', 'log', '--pretty=format:\'\"%cn, %cd, %s\"\'',
                 '--stat','--after=', "-".join([_date[0:4], _date[4:6], _date[6:]]) + " 00\:00\:00"], stdout = sp.PIPE)
+
         
         f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "w")
         f.write(result.stdout.decode("utf-8"))
@@ -68,16 +69,15 @@ class Processor(BehaviorModelExecutor):
 
             self.process_ext_event(splitedItem[0], splitedItem[1], check_date)
             
-            self._event_to_send = splitedItem[0] # Send Student ID
+            self._event_to_send = [splitedItem[0], splitedItem[1], check_date] # Send Student ID
             self._cur_state = "PROCESS" 
 
     def output(self):
         #temp = "[%f]" % (SystemSimulator().get_engine(self.engine_name).get_global_time())
         #print(temp)
         msg = SysMessage(self.get_name(), "assess")
-        #print(str(datetime.datetime.now()) + " Assess Object:")
-        msg.insert(self._event_to_send)
-        self._event_to_send = ""
+        msg.extend(self._event_to_send)
+        self._event_to_send = None
         return msg
         
 
