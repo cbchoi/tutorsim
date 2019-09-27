@@ -20,23 +20,29 @@ class Processor(BehaviorModelExecutor):
 
         self._event_recv = ""
 
+    def process_ext_event(self, _id, _repo):
+        os.chdir(_id)
+        splitedItems = [x for x in _repo.split('/') if x]
+        sol_dir = splitedItems[-1].split('.')[0]
+        if os.path.exists(sol_dir):
+            os.chdir(sol_dir)
+            sp.run([ "git", "pull", _repo])
+        else:
+            sp.run([ "git", "clone", _repo])
+        os.chdir('..')
+
     def ext_trans(self,port, msg):
         if port == "process":
             data = msg.retrieve()
             print(data[0])
-            '''
-            splitedItems = [x for x in data[0].split('/') if x]
-            sol_dir = splitedItems[-1].split('.')[0]
-            # check path
-            sol_path = "./" + sol_dir
-            if os.path.exists(sol_path):
-                os.chdir(sol_path)
-                sp.run([ "git", "pull", data[0]])
-            else:
-                sp.run([ "git", "clone", data[0]])
+            splitedItem = data[0].split(', ')
 
+            if not os.path.exists(splitedItem[0]): # First Item denotes student's ID
+                os.makedirs(splitedItem[0])
+
+            self.process_ext_event(splitedItem[0], splitedItem[1])
+            
             self._event_recv = data[0]
-            '''
             self._cur_state = "PROCESS"
 
     def output(self):

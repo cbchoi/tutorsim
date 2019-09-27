@@ -5,9 +5,9 @@ from tutorsim.behavior_model_executor import BehaviorModelExecutor
 from tutorsim.system_message import SysMessage
 from tutorsim.definition import *
 
-from tutorsim.generator import Generator
-from tutorsim.processor import Processor
-from tutorsim.assessor import Assessor
+from my_generator import Generator
+from my_processor import Processor
+from my_assessor import Assessor
 
 
 se = SystemSimulator()
