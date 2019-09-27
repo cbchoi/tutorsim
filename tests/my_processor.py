@@ -27,14 +27,16 @@ class Processor(BehaviorModelExecutor):
         if os.path.exists(sol_dir):
             os.chdir(sol_dir)
             sp.run([ "git", "pull", _repo])
+            os.chdir("..")
         else:
             sp.run([ "git", "clone", _repo])
+
         os.chdir('..')
 
     def ext_trans(self,port, msg):
         if port == "process":
             data = msg.retrieve()
-            print(data[0])
+            #print(data[0])
             splitedItem = data[0].split(', ')
 
             if not os.path.exists(splitedItem[0]): # First Item denotes student's ID

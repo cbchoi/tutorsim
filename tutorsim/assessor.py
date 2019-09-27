@@ -21,14 +21,14 @@ class Assessor(BehaviorModelExecutor):
 
     def ext_trans(self,port, msg):
         data = msg.retrieve()
-        print("Assessor")
+        #print("Assessor")
         #print(str(datetime.datetime.now()) +  " " + str(data[0]))
-        temp = "[%f] %s" % (SystemSimulator().get_engine(self.engine_name).get_global_time(), str(data[0]))
-        print(temp)
+        #temp = "[%f] %s" % (SystemSimulator().get_engine(self.engine_name).get_global_time(), str(data[0]))
+        #print(temp)
 
     def output(self):
-        temp = "[%f] %s" % (SystemSimulator().get_engine(self.engine_name).get_global_time(), "Human Receiver Object: Move")
-        print(temp)
+        #temp = "[%f] %s" % (SystemSimulator().get_engine(self.engine_name).get_global_time(), "Human Receiver Object: Move")
+        #print(temp)
         return None
 
     def int_trans(self):
