@@ -13,17 +13,23 @@ se = SystemSimulator()
 
 SystemSimulator().register_engine("sname")
 
-g = Generator(0, 100, "Peter", "sname")
+g = Generator(0, Infinite, "Peter", "sname")
 p = Processor(0, Infinite, "Mat", "sname")
 a = Assessor(0, Infinite, "Simon", "sname")
 
 SystemSimulator().get_engine("sname").insert_input_port("start")
+SystemSimulator().get_engine("sname").insert_input_port("report")
 SystemSimulator().get_engine("sname").register_entity(g)
 SystemSimulator().get_engine("sname").register_entity(p)
 SystemSimulator().get_engine("sname").register_entity(a)
 
 SystemSimulator().get_engine("sname").coupling_relation(None, "start", g, "start")
+SystemSimulator().get_engine("sname").coupling_relation(None, "report", a, "report")
+
 SystemSimulator().get_engine("sname").coupling_relation(g, "process", p, "process")
 SystemSimulator().get_engine("sname").coupling_relation(p, "assess", a, "assess")
 SystemSimulator().get_engine("sname").insert_external_event("start", "student_list.csv")
+SystemSimulator().get_engine("sname").simulate()
+print("!")
+SystemSimulator().get_engine("sname").insert_external_event("report", "student_list.csv")
 SystemSimulator().get_engine("sname").simulate()

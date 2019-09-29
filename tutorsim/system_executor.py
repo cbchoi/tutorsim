@@ -224,6 +224,8 @@ class SysExecutor(SysObject, BehaviorModel):
         sm.insert(_msg)
         if _port in self._input_ports:
             heapq.heappush(self.input_event_queue, (scheduled_time + self.global_time, sm))
+            if self.simulation_mode != SimulationMode.SIMULATION_IDLE:
+                self.handle_external_input_event()
         else:
             # TODO Exception Handling
             pass
@@ -234,6 +236,7 @@ class SysExecutor(SysObject, BehaviorModel):
     def handle_external_input_event(self):
         event_list = [ev for ev in self.input_event_queue if ev[0] <= self.global_time]
         for event in event_list:
+
             self.output_handling(None, event[1])
             heapq.heappop(self.input_event_queue)
 

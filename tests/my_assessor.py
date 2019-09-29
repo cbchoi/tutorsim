@@ -19,6 +19,9 @@ class Assess(object):
         self.logs = ""
         pass
 
+    def get_date(self):
+        return self._month + self._day
+
     def check(self, line):
         self.logs += line + '\n'
 
@@ -50,14 +53,11 @@ class Assessor(BehaviorModelExecutor):
         self.insert_state("MOVE", 1)
 
         self.insert_input_port("assess")
+        self.insert_input_port("report")
         self.insert_output_port("done")
 
         self.assessed_students = {}
         self.current_student = None
-
-    def assess_daily_commits(self, _assess, line):
-
-        pass
 
     def process_daily_commits(self, _id, _git_id, _date, eval_dir):
         print(f"Evaluating {_id}'s commit logs")
@@ -82,7 +82,7 @@ class Assessor(BehaviorModelExecutor):
 
                 if bProcess:
                     bProcess = not self.current_student.check(line)
-                    
+
 
         for key, value in self.assessed_students.items():
             for k, v in value.items():
@@ -96,10 +96,18 @@ class Assessor(BehaviorModelExecutor):
             eval_dir = home_dir + "/assessment/" + data[3] # date
             
             self.process_daily_commits(data[0], data[1], data[3], eval_dir)
+        
+        if port == "report":
+            self._cur_state = "MOVE"
+            
 
     def output(self):
-        
+        for key, value in self.assessed_students.items():
+            for k, v in value.items():
+                print(v)
+                        
         return None
 
     def int_trans(self):
-        self._cur_state = "MOVE"
+        if self._cur_state == "MOVE":
+            self._cur_state = "IDLE"
