@@ -1,3 +1,3 @@
 # Stores credential information
-GIT_USER_ID='test'
-GIT_USER_PASSWORD='test'
+GIT_USER_ID='cbchoi'
+GIT_USER_PASSWORD='123123'
