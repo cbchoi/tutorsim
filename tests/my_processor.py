@@ -29,7 +29,7 @@ class Processor(BehaviorModelExecutor):
         sp.run([ "git", "pull"])
         
         beforedate = datetime.datetime.now()
-        afterdate = beforedate - datetime.timedelta(days=1)
+        afterdate = beforedate - datetime.timedelta(days=100)
 
         op_after = "--after='{0}'".format(afterdate.isoformat())
         op_before = "--before='{0}'".format(beforedate.isoformat())
@@ -37,8 +37,8 @@ class Processor(BehaviorModelExecutor):
         result = sp.run(['git', 'log', '--pretty=format:\'\"!!%cn, %cd, %s\"\'',
                 '--stat','-p', op_after, op_before], stdout = sp.PIPE)
         
-        f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "w")
-        f.write(result.stdout.decode("utf-8"))
+        f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "wb")
+        f.write(result.stdout)
         f.close()
         os.chdir("..")
 
