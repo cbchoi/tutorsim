@@ -24,9 +24,16 @@ class Processor(BehaviorModelExecutor):
     def process_student(self, _id, _date, _home):
         print(f"Processing {_id}'s {_date} commit logs")
         sp.run([ "git", "pull"])
+        
+        beforedate = datetime.now()
+        afterdate = beforedate - datetime.timedelta(days=-1)
+        
+        print(date)
+        date += datetime.timedelta(days=1)
+        print(date)
         result = sp.run(['git', 'log', '--pretty=format:\'\"%cn, %cd, %s\"\'',
-                '--stat','--after=', "-".join([_date[0:4], _date[4:6], _date[6:]]) + " 00\:00\:00"], stdout = sp.PIPE)
-
+                '--stat','--after=', afterdate, '--beforedate=', beforedate], stdout = sp.PIPE)
+        
         
         f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "w")
         f.write(result.stdout.decode("utf-8"))

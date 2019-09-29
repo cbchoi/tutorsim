@@ -103,3 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# course related
+instance
+sit22005
+assessment
