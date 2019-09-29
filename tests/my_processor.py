@@ -7,6 +7,9 @@ import os
 import subprocess as sp
 import datetime
 
+from config import *
+from instance.config import *
+
 class Processor(BehaviorModelExecutor):
     def __init__(self, instance_time, destruct_time, name, engine_name):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
@@ -25,15 +28,14 @@ class Processor(BehaviorModelExecutor):
         print(f"Processing {_id}'s {_date} commit logs")
         sp.run([ "git", "pull"])
         
-        beforedate = datetime.now()
-        afterdate = beforedate - datetime.timedelta(days=-1)
-        
-        print(date)
-        date += datetime.timedelta(days=1)
-        print(date)
+        beforedate = datetime.datetime.now()
+        afterdate = beforedate - datetime.timedelta(days=1)
+
+        op_after = "--after='{0}'".format(afterdate.isoformat())
+        op_before = "--before='{0}'".format(beforedate.isoformat())
+
         result = sp.run(['git', 'log', '--pretty=format:\'\"%cn, %cd, %s\"\'',
-                '--stat','--after=', afterdate, '--beforedate=', beforedate], stdout = sp.PIPE)
-        
+                '--stat',op_after, op_before], stdout = sp.PIPE)
         
         f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "w")
         f.write(result.stdout.decode("utf-8"))
@@ -41,7 +43,6 @@ class Processor(BehaviorModelExecutor):
         os.chdir("..")
 
     def process_ext_event(self, _id, _repo, _date):
-        #os.chdir(_id)
         splitedItems = [x for x in _repo.split('/') if x]
         
         home_dir = os.getcwd()
@@ -50,7 +51,11 @@ class Processor(BehaviorModelExecutor):
         
         if not os.path.exists(solu_dir):
             os.chdir(stud_dir)
-            sp.run([ "git", "clone", _repo])
+
+            data = _repo.split("https://")
+            new_command = "https://{0}:{1}@{2}".format(GIT_USER_ID, GIT_USER_PASSWORD, data[1])
+
+            sp.run(["git", "clone", new_command])
             os.chdir(home_dir)
 
         os.chdir(solu_dir)
@@ -60,7 +65,6 @@ class Processor(BehaviorModelExecutor):
     def ext_trans(self,port, msg):
         if port == "process":
             data = msg.retrieve()
-            #print(data[0])
             splitedItem = data[0].split(', ')
             
             if not os.path.exists('assessment/repository/'): # Check assessment folder
@@ -80,8 +84,6 @@ class Processor(BehaviorModelExecutor):
             self._cur_state = "PROCESS" 
 
     def output(self):
-        #temp = "[%f]" % (SystemSimulator().get_engine(self.engine_name).get_global_time())
-        #print(temp)
         msg = SysMessage(self.get_name(), "assess")
         msg.extend(self._event_to_send)
         self._event_to_send = None

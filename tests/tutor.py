@@ -9,7 +9,6 @@ from my_generator import Generator
 from my_processor import Processor
 from my_assessor import Assessor
 
-
 se = SystemSimulator()
 
 SystemSimulator().register_engine("sname")
