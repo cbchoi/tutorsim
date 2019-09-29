@@ -8,7 +8,11 @@ import subprocess as sp
 import datetime
 from pathlib import Path 
 
-MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+import pandas as pd
+import numpy as np
+
+MONTH = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06', 
+         'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
 
 class Assess(object):
     def __init__(self, month, day):
@@ -20,7 +24,7 @@ class Assess(object):
         pass
 
     def get_date(self):
-        return self._month + self._day
+        return MONTH[self._month] + self._day
 
     def check(self, line):
         self.logs += line + '\n'
@@ -70,7 +74,7 @@ class Assessor(BehaviorModelExecutor):
 
                 if line and ("!!"+_git_id) in line:
                     splitedItems = line.split()
-                    date = splitedItems[2] + splitedItems[3]
+                    date = MONTH[splitedItems[2]] + splitedItems[3]
 
                     if _id not in self.assessed_students:
                         self.assessed_students[_id] = {}
@@ -83,10 +87,6 @@ class Assessor(BehaviorModelExecutor):
                 if bProcess:
                     bProcess = not self.current_student.check(line)
 
-
-        for key, value in self.assessed_students.items():
-            for k, v in value.items():
-                print(v)
 
     def ext_trans(self,port, msg):
         if port == "assess":
@@ -102,10 +102,18 @@ class Assessor(BehaviorModelExecutor):
             
 
     def output(self):
+
+        df = pd.DataFrame('', index=[], columns=[])
         for key, value in self.assessed_students.items():
             for k, v in value.items():
-                print(v)
-                        
+                df.loc[key, k] = 'O'
+
+        print(df)
+        df = df.fillna(value='X')
+        df = df.sort_index(axis=1)
+        print(df)
+        #df.sort_index(axis=0)
+        df.to_csv('foo.csv')
         return None
 
     def int_trans(self):

@@ -64,12 +64,12 @@ class Processor(BehaviorModelExecutor):
         self.process_student(_id, _date, home_dir)
         os.chdir(home_dir)
 
-        return (userid,repo_name)
+        return repo_name
 
     def ext_trans(self,port, msg):
         if port == "process":
             data = msg.retrieve()
-            splitedItem = data[0].split(', ')
+            splitedItem = data[0].split(',')
             
             if not os.path.exists('assessment/repository/'): # Check assessment folder
                 os.makedirs('assessment/repository/')
@@ -82,9 +82,10 @@ class Processor(BehaviorModelExecutor):
             if not os.path.exists('assessment/' + check_date): # Check assessment folder
                 os.makedirs('assessment/'+ check_date)
 
-            userid, repo_name = self.process_ext_event(splitedItem[0], splitedItem[1], check_date)
+            print(splitedItem)
+            repo_name = self.process_ext_event(splitedItem[0], splitedItem[2], check_date)
             
-            self._event_to_send = [splitedItem[0], userid, repo_name, check_date] # Send Student ID
+            self._event_to_send = [splitedItem[0], splitedItem[1], repo_name, check_date] # Send Student ID
             self._cur_state = "PROCESS" 
 
     def output(self):
