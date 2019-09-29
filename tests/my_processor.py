@@ -34,8 +34,8 @@ class Processor(BehaviorModelExecutor):
         op_after = "--after='{0}'".format(afterdate.isoformat())
         op_before = "--before='{0}'".format(beforedate.isoformat())
 
-        result = sp.run(['git', 'log', '--pretty=format:\'\"%cn, %cd, %s\"\'',
-                '--stat',op_after, op_before], stdout = sp.PIPE)
+        result = sp.run(['git', 'log', '--pretty=format:\'\"!!%cn, %cd, %s\"\'',
+                '--stat','-p', op_after, op_before], stdout = sp.PIPE)
         
         f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "w")
         f.write(result.stdout.decode("utf-8"))
@@ -44,10 +44,12 @@ class Processor(BehaviorModelExecutor):
 
     def process_ext_event(self, _id, _repo, _date):
         splitedItems = [x for x in _repo.split('/') if x]
-        
+        repo_name = splitedItems[-1].split('.')[0]
+        userid = splitedItems[-2]
+
         home_dir = os.getcwd()
         stud_dir = home_dir + "/assessment/repository/" + _id
-        solu_dir = stud_dir + '/' + splitedItems[-1].split('.')[0]
+        solu_dir = stud_dir + '/' + repo_name
         
         if not os.path.exists(solu_dir):
             os.chdir(stud_dir)
@@ -61,6 +63,8 @@ class Processor(BehaviorModelExecutor):
         os.chdir(solu_dir)
         self.process_student(_id, _date, home_dir)
         os.chdir(home_dir)
+
+        return (userid,repo_name)
 
     def ext_trans(self,port, msg):
         if port == "process":
@@ -78,9 +82,9 @@ class Processor(BehaviorModelExecutor):
             if not os.path.exists('assessment/' + check_date): # Check assessment folder
                 os.makedirs('assessment/'+ check_date)
 
-            self.process_ext_event(splitedItem[0], splitedItem[1], check_date)
+            userid, repo_name = self.process_ext_event(splitedItem[0], splitedItem[1], check_date)
             
-            self._event_to_send = [splitedItem[0], splitedItem[1], check_date] # Send Student ID
+            self._event_to_send = [splitedItem[0], userid, repo_name, check_date] # Send Student ID
             self._cur_state = "PROCESS" 
 
     def output(self):
