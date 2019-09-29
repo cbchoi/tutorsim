@@ -9,6 +9,9 @@ from my_generator import Generator
 from my_processor import Processor
 from my_assessor import Assessor
 
+from config import *
+from instance.config import *
+
 se = SystemSimulator()
 
 SystemSimulator().register_engine("sname")
@@ -28,8 +31,8 @@ SystemSimulator().get_engine("sname").coupling_relation(None, "report", a, "repo
 
 SystemSimulator().get_engine("sname").coupling_relation(g, "process", p, "process")
 SystemSimulator().get_engine("sname").coupling_relation(p, "assess", a, "assess")
-SystemSimulator().get_engine("sname").insert_external_event("start", "student_list.csv")
+SystemSimulator().get_engine("sname").insert_external_event("start", STUDENT_LIST_SOURCE)
 SystemSimulator().get_engine("sname").simulate()
 print("!")
-SystemSimulator().get_engine("sname").insert_external_event("report", "student_list.csv")
+SystemSimulator().get_engine("sname").insert_external_event("report", ASSESSMNET_DESTINATION)
 SystemSimulator().get_engine("sname").simulate()

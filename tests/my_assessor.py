@@ -62,6 +62,7 @@ class Assessor(BehaviorModelExecutor):
 
         self.assessed_students = {}
         self.current_student = None
+        self.asessment_file_path = ""
 
     def process_daily_commits(self, _id, _git_id, _date, eval_dir):
         print(f"Evaluating {_id}'s commit logs")
@@ -98,6 +99,8 @@ class Assessor(BehaviorModelExecutor):
             self.process_daily_commits(data[0], data[1], data[3], eval_dir)
         
         if port == "report":
+            data = msg.retrieve()
+            self.asessment_file_path = data[0]
             self._cur_state = "MOVE"
             
 
@@ -113,7 +116,7 @@ class Assessor(BehaviorModelExecutor):
         df = df.sort_index(axis=1)
         print(df)
         #df.sort_index(axis=0)
-        df.to_csv('foo.csv')
+        df.to_csv(self.asessment_file_path)
         return None
 
     def int_trans(self):
