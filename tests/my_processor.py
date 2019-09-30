@@ -34,8 +34,11 @@ class Processor(BehaviorModelExecutor):
         op_after = "--after='{0}'".format(afterdate.isoformat())
         op_before = "--before='{0}'".format(beforedate.isoformat())
 
-        result = sp.run(['git', 'log', '--pretty=format:\'\"!!%cn, %cd, %s\"\'',
+        result = sp.run(['git', 'log', '--pretty=format:\'\"!!@@##%cn, %cd, %s\"\'',
                 '--stat','-p', op_after, op_before], stdout = sp.PIPE)
+        
+        #result = sp.run(['git', 'log', '--pretty=format:\'\"!!%cn, %cd, %s\"\'',
+        #         '--stat','-p', op_before], stdout = sp.PIPE)
         
         f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "wb")
         f.write(result.stdout)
@@ -82,7 +85,7 @@ class Processor(BehaviorModelExecutor):
             if not os.path.exists('assessment/' + check_date): # Check assessment folder
                 os.makedirs('assessment/'+ check_date)
 
-            print(splitedItem)
+            #print(splitedItem)
             repo_name = self.process_ext_event(splitedItem[0], splitedItem[2], check_date)
             
             self._event_to_send = [splitedItem[0], splitedItem[1], repo_name, check_date] # Send Student ID
