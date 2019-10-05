@@ -11,12 +11,13 @@ class Generator(BehaviorModelExecutor):
         self.init_state("IDLE")
         self.insert_state("IDLE", Infinite)
         self.insert_state("ASSESS", 1)
-        self.insert_state("WAIT", 300)
+        self.insert_state("WAIT", 30)
 
         self.insert_input_port("start")
         self.insert_output_port("process")
 
         self.student_list = []
+        self.cur_idx = 0
 
     def ext_trans(self,port, msg):
         if port == "start":
@@ -27,17 +28,21 @@ class Generator(BehaviorModelExecutor):
 
     def output(self):
         #temp = "[%f]" % (SystemSimulator().get_engine(self.engine_name).get_global_time())
-        student = self.student_list.pop(0)
+        student = self.student_list[self.cur_idx]
         msg = SysMessage(self.get_name(), "process")
         #print(str(datetime.datetime.now()) + " Human Object:")
         msg.insert(student)
         return msg
         
     def int_trans(self):
-        if self._cur_state == "ASSESS" and not self.student_list:
+        if self._cur_state == "ASSESS" and len(self.student_list) == self.cur_idx +1:
             self._cur_state = "WAIT"
+        elif self._cur_state == "WAIT":
+            self._cur_state = "ASSESS"
+            self.cur_idx = 0
         else:
             self._cur_state = "ASSESS"
+            self.cur_idx += 1
 
     def process_studnets_list(self, student_list):
         f = open(student_list, "r")

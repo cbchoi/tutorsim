@@ -161,14 +161,12 @@ class SysExecutor(SysObject, BehaviorModel):
 
     def schedule(self):
         # Agent Creation
-        if self.sim_mode == "REAL_TIME":
-            time.sleep(self.time_step)
-
         self.create_entity()
         self.handle_external_input_event()
 
         tuple_obj = self.min_schedule_item.popleft()
 
+        before = time.perf_counter()
         while tuple_obj.get_req_time() <= self.global_time:
             msg = tuple_obj.output()
             if msg is not None:
@@ -187,6 +185,9 @@ class SysExecutor(SysObject, BehaviorModel):
         # update Global Time
         self.global_time += self.time_step
 
+        after = time.perf_counter()
+        if self.sim_mode == "REAL_TIME":
+            time.sleep((lambda x: x if x > 0 else 0)(float(self.time_step) - float(after-before)))
         # Agent Deletion
         self.destroy_entity()
 
