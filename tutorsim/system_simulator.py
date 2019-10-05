@@ -14,8 +14,8 @@ class SystemSimulator(object):
     _engine = {}
 
     @staticmethod
-    def register_engine(sim_name, time_step=1):
-        SystemSimulator._engine[sim_name] = SysExecutor(time_step, sim_name)
+    def register_engine(sim_name, sim_mode='VIRTUAL_TIME', time_step=1):
+        SystemSimulator._engine[sim_name] = SysExecutor(time_step, sim_name, sim_mode)
 
     @staticmethod
     def get_engine_map():

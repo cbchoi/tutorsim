@@ -6,6 +6,8 @@
 from collections import deque
 import heapq
 import copy
+import time
+import datetime
 
 from tutorsim.definition import *
 from tutorsim.default_message_catcher import *
@@ -18,7 +20,7 @@ class SysExecutor(SysObject, BehaviorModel):
     EXTERNAL_SRC = "SRC"
     EXTERNAL_DST = "DST"
 
-    def __init__(self, _time_step, _sim_name='default'):
+    def __init__(self, _time_step, _sim_name='default', _sim_mode='VIRTUAL_TIME'):
         BehaviorModel.__init__(self, _sim_name)
 
         self.global_time = 0
@@ -46,6 +48,9 @@ class SysExecutor(SysObject, BehaviorModel):
         # External Interface
         self.input_event_queue = []
         self.output_event_queue = deque()
+
+        # TIME Handling
+        self.sim_mode = _sim_mode
 
     # retrieve global time
     def get_global_time(self):
@@ -156,6 +161,9 @@ class SysExecutor(SysObject, BehaviorModel):
 
     def schedule(self):
         # Agent Creation
+        if self.sim_mode == "REAL_TIME":
+            time.sleep(self.time_step)
+
         self.create_entity()
         self.handle_external_input_event()
 
@@ -182,6 +190,7 @@ class SysExecutor(SysObject, BehaviorModel):
         # Agent Deletion
         self.destroy_entity()
 
+
     def simulate(self, _time=Infinite):
         # Termination Condition
         self.target_time = self.global_time + _time
@@ -191,7 +200,7 @@ class SysExecutor(SysObject, BehaviorModel):
 
         while self.global_time < self.target_time:
             if not self.waiting_obj_map:
-                if self.min_schedule_item[0].get_req_time() == Infinite:
+                if self.min_schedule_item[0].get_req_time() == Infinite and self.sim_mode == 'VIRTUAL_TIME' :
                     self.simulation_mode = SimulationMode.SIMULATION_TERMINATED
                     break
 
