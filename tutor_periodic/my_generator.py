@@ -15,6 +15,7 @@ class Generator(BehaviorModelExecutor):
 
         self.insert_input_port("start")
         self.insert_output_port("process")
+        self.insert_output_port("report")
 
         self.student_list = []
         self.cur_idx = 0
@@ -27,12 +28,18 @@ class Generator(BehaviorModelExecutor):
             self.process_studnets_list(data[0])
 
     def output(self):
-        #temp = "[%f]" % (SystemSimulator().get_engine(self.engine_name).get_global_time())
-        student = self.student_list[self.cur_idx]
-        msg = SysMessage(self.get_name(), "process")
-        #print(str(datetime.datetime.now()) + " Human Object:")
-        msg.insert(student)
-        return msg
+        if self._cur_state == "ASSESS":
+            #temp = "[%f]" % (SystemSimulator().get_engine(self.engine_name).get_global_time())
+            student = self.student_list[self.cur_idx]
+            msg = SysMessage(self.get_name(), "process")
+            #print(str(datetime.datetime.now()) + " Human Object:")
+            msg.insert(student)
+            return msg
+        elif self._cur_state == "WAIT":
+            msg = SysMessage(self.get_name(), "report")
+            return msg
+        else:
+            return None
         
     def int_trans(self):
         if self._cur_state == "ASSESS" and len(self.student_list) == self.cur_idx +1:

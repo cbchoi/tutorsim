@@ -30,7 +30,9 @@ SystemSimulator().get_engine("sname").coupling_relation(None, "start", g, "start
 SystemSimulator().get_engine("sname").coupling_relation(None, "report", a, "report")
 
 SystemSimulator().get_engine("sname").coupling_relation(g, "process", p, "process")
+SystemSimulator().get_engine("sname").coupling_relation(g, "report", a, "report")
 SystemSimulator().get_engine("sname").coupling_relation(p, "assess", a, "assess")
+
 SystemSimulator().get_engine("sname").insert_external_event("start", STUDENT_LIST_SOURCE)
 SystemSimulator().get_engine("sname").simulate()
 print("!")

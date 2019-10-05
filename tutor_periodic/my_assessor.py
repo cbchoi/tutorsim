@@ -81,7 +81,6 @@ class Assessor(BehaviorModelExecutor):
                     print(line)
                     continue
                 
-
                 if line and ("!!@@##") in line:
                     preprocessed = line.split(',')
                     splitedItems = preprocessed[1].split()
@@ -90,9 +89,8 @@ class Assessor(BehaviorModelExecutor):
                     if _id not in self.assessed_students:
                         self.assessed_students[_id] = {}
 
-                    if date not in self.assessed_students[_id]:
-                        self.assessed_students[_id][date] = Assess(splitedItems[1], splitedItems[2])
-                        self.current_student = self.assessed_students[_id][date]
+                    self.assessed_students[_id][date] = Assess(splitedItems[1], splitedItems[2])
+                    self.current_student = self.assessed_students[_id][date]
                     bProcess = True
 
                 if bProcess:
@@ -109,8 +107,8 @@ class Assessor(BehaviorModelExecutor):
             self.process_daily_commits(data[0], data[1], data[3], eval_dir)
         
         if port == "report":
-            data = msg.retrieve()
-            self.asessment_file_path = data[0]
+            #data = msg.retrieve()
+            #self.asessment_file_path = data[0]
             self._cur_state = "PROCESS"
             
 
@@ -126,7 +124,7 @@ class Assessor(BehaviorModelExecutor):
         df = df.sort_index(axis=1)
         print(df)
         #df.sort_index(axis=0)
-        df.to_csv(self.asessment_file_path)
+        #df.to_csv(self.asessment_file_path)
 
         #authorization
         gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
