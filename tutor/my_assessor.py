@@ -126,7 +126,7 @@ class Assessor(BehaviorModelExecutor):
         df = df.sort_index(axis=1)
         print(df)
         #df.sort_index(axis=0)
-        df.to_csv(self.asessment_file_path)
+        #df.to_csv(self.asessment_file_path)
 
         #authorization
         gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
