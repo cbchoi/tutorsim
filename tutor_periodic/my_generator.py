@@ -11,7 +11,7 @@ class Generator(BehaviorModelExecutor):
         self.init_state("IDLE")
         self.insert_state("IDLE", Infinite)
         self.insert_state("ASSESS", 1)
-        self.insert_state("WAIT", 21600)
+        self.insert_state("WAIT", 60)
 
         self.insert_input_port("start")
         self.insert_output_port("process")
