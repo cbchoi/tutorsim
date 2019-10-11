@@ -84,7 +84,7 @@ class Assessor(BehaviorModelExecutor):
                 if line and ("!!@@##") in line:
                     preprocessed = line.split(',')
                     splitedItems = preprocessed[1].split()
-                    date = "'{:02d}.{:02d}".format(MONTH[splitedItems[1]], splitedItems[2])
+                    date = "'{:02d}.{:02d}".format(MONTH[splitedItems[1]], int(splitedItems[2]))
                     #print(date)
                     if _id not in self.assessed_students:
                         self.assessed_students[_id] = {}
