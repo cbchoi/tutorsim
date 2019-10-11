@@ -11,8 +11,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-MONTH = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06', 
-         'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
+MONTH = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 
+         'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12}
 
 from config import *
 from instance.config import *
@@ -84,7 +84,7 @@ class Assessor(BehaviorModelExecutor):
                 if line and ("!!@@##") in line:
                     preprocessed = line.split(',')
                     splitedItems = preprocessed[1].split()
-                    date = "'{0:02d}.{1:02d}".format(MONTH[splitedItems[1]], splitedItems[2])
+                    date = "'{:02d}.{:02d}".format(MONTH[splitedItems[1]], splitedItems[2])
                     #print(date)
                     if _id not in self.assessed_students:
                         self.assessed_students[_id] = {}
