@@ -119,10 +119,10 @@ class Assessor(BehaviorModelExecutor):
             for k, v in value.items():
                 df.loc[key, k] = 'O'
 
-        print(df)
+        #print(df)
         df = df.fillna(value='X')
         df = df.sort_index(axis=1)
-        print(df)
+        #print(df)
         #df.sort_index(axis=0)
         #df.to_csv(self.asessment_file_path)
 
@@ -136,13 +136,13 @@ class Assessor(BehaviorModelExecutor):
         #df['name'] = ['John', 'Steve', 'Sarah']
 
         #open the google spreadsheet (where 'PY to Gsheet Test' is the name of my sheet)
-        #sh = gc.open('SIT22005-201902')
+        sh = gc.open('SIT22005-201902')
 
         #select the first sheet 
-        #wks = sh[0]
+        wks = sh[0]
 
         #update the first sheet with df, starting at cell B2. 
-        #wks.set_dataframe(df,(1,1), copy_index=True)
+        wks.set_dataframe(df,(1,1), copy_index=True)
         return None
 
     def int_trans(self):
