@@ -24,34 +24,19 @@ class Processor(BehaviorModelExecutor):
 
         self._event_to_send = None
 
-    def process_student(self, _id, _date, _home):
-        print(f"Processing {_id}'s {_date} commit logs")
-        sp.run([ "git", "pull"])
-        
-        beforedate = datetime.datetime.now()
-        afterdate = beforedate - datetime.timedelta(days=130)
+    def process_student(self, _id, _home):
+        print(f"Compiling {_id}'s submission")
+        sp.run(["make"])
 
-        op_after = "--after='{0}'".format(afterdate.isoformat())
-        op_before = "--before='{0}'".format(beforedate.isoformat())
-
-        result = sp.run(['git', 'log', '--pretty=format:\'\"!!@@##%cn, %cd, %s\"\'',
-                '--stat','-p', op_after, op_before], stdout = sp.PIPE)
         
-        #result = sp.run(['git', 'log', '--pretty=format:\'\"!!%cn, %cd, %s\"\'',
-        #         '--stat','-p', op_before], stdout = sp.PIPE)
-        
-        f = open(_home + "/assessment/" + _date + "/" + _id + ".log", "wb")
-        f.write(result.stdout)
-        f.close()
-        os.chdir("..")
-
-    def process_ext_event(self, _id, _repo, _date):
+    def process_ext_event(self, _id, _repo):
         splitedItems = [x for x in _repo.split('/') if x]
         repo_name = splitedItems[-1].split('.')[0]
         userid = splitedItems[-2]
 
         home_dir = os.getcwd()
-        stud_dir = home_dir + "/assessment/repository/" + _id
+        assess_dir = home_dir + "/assessment"
+        stud_dir = assess_dir + "/repository/" + _id
         solu_dir = stud_dir + '/' + repo_name
         
         if not os.path.exists(solu_dir):
@@ -59,12 +44,13 @@ class Processor(BehaviorModelExecutor):
 
             data = _repo.split("https://")
             new_command = "https://{0}:{1}@{2}".format(GIT_USER_ID, GIT_USER_PASSWORD, data[1])
-
             sp.run(["git", "clone", new_command])
+            for problem in PROBLEM_LIST:
+                sp.run(["cp", "-Rf", os.path.join(assess_dir, SOLUTION_DIR, '2019/midterm01/', problem), solu_dir])
             os.chdir(home_dir)
 
         os.chdir(solu_dir)
-        self.process_student(_id, _date, home_dir)
+        self.process_student(_id, home_dir)
         os.chdir(home_dir)
 
         return repo_name
@@ -80,15 +66,10 @@ class Processor(BehaviorModelExecutor):
             if not os.path.exists('assessment/repository/' + splitedItem[0]): # First Item denotes student's ID
                 os.makedirs('assessment/repository/' + splitedItem[0])
             
-            check_date = datetime.datetime.now().strftime("%Y%m%d")
-
-            if not os.path.exists('assessment/' + check_date): # Check assessment folder
-                os.makedirs('assessment/'+ check_date)
-
             #print(splitedItem)
-            repo_name = self.process_ext_event(splitedItem[0], splitedItem[2], check_date)
+            repo_name = self.process_ext_event(splitedItem[0], splitedItem[2])
             
-            self._event_to_send = [splitedItem[0], splitedItem[1], repo_name, check_date] # Send Student ID
+            self._event_to_send = [splitedItem[0], splitedItem[2], repo_name] # Send Student ID
             self._cur_state = "PROCESS" 
 
     def output(self):

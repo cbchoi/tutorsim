@@ -7,6 +7,7 @@ import os
 import subprocess as sp
 import datetime
 from pathlib import Path 
+from subprocess import STDOUT, check_output, TimeoutExpired
 
 import pandas as pd
 import numpy as np
@@ -19,36 +20,33 @@ from instance.config import *
 import pygsheets
 
 class Assess(object):
-    def __init__(self, month, day):
-        self._month = month
-        self._day = day
-        self.insertion_cnts = 0
-        self.deletion_cnts = 0
-        self.logs = ""
-        pass
+    def __init__(self, _id, problem_list):
+        self._id = _id
+        self.assessments = {}
+        for problem in problem_list:
+            self.assessments[problem] = ""
 
-    def get_date(self):
-        return MONTH[self._month] + self._day
+    def get_id(self):
+        return self._id
 
-    def check(self, line):
-        self.logs += line + '\n'
+    def get_assessments(self):
+        return self.assessments
 
-        done_flag = False
-        if 'files changed' in line:
-            done_flag = True
-
-        if 'insertions' in line:
-            self.insertion_cnts += 1
-            done_flag = True
-
-        if 'deletions' in line:
-            self.deletion_cnts += 1
-            done_flag = True
-
-        return done_flag
-
-    def __str__(self):
-        return f'{self._month}-{self._day} I:{self.insertion_cnts} D:{self.deletion_cnts}'
+    def assess(self, problem):
+        if os.path.isfile('pass.assess'):
+            with open('pass.assess', 'rb') as f:
+                self.assessments[problem] = f.read().decode('utf8')
+        elif os.path.isfile('wrong.assess'):
+            with open('wrong.assess', 'rb') as f:
+                self.assessments[problem] = f.read().decode('utf8')
+        elif os.path.isfile('c_error.assess'):
+            with open('c_error.assess', 'rb') as f:
+                self.assessments[problem] = f.read().decode('utf8')
+        elif os.path.isfile('t_exipred.assess'):
+            with open('t_exipred.assess', 'rb') as f:
+                self.assessments[problem] = f.read().decode('utf8')
+        else:
+            self.assessments[problem] = "unknown"
 
 
 class Assessor(BehaviorModelExecutor):
@@ -68,35 +66,19 @@ class Assessor(BehaviorModelExecutor):
         self.current_student = None
         self.asessment_file_path = ""
 
-    def process_daily_commits(self, _id, _git_id, _date, eval_dir):
-        print(f"Evaluating {_id}'s commit logs")
+    def process_examination(self, _id, eval_dir):
+        print(f"Assessing {_id}'s answers")
         
-        bProcess = False
-        stu_log = eval_dir + "/" + _id + ".log"
-        with open(stu_log, "rb") as f:
-            for line in f:
-                try:
-                    line = line.decode().strip()
-                except Exception as e:
-                    print(line)
-                    continue
-                
+        self.assessed_students[_id] = Assess(_id, PROBLEM_LIST)
 
-                if line and ("!!@@##") in line:
-                    preprocessed = line.split(',')
-                    splitedItems = preprocessed[1].split()
-                    date = MONTH[splitedItems[1]] + splitedItems[2]
+        for problem in PROBLEM_LIST:
+            problem_path = os.path.join(eval_dir, problem)
+            os.chdir(problem_path)
+            cmd = ['python3', "grade_criteria.py"]
+            sp.run(cmd)
 
-                    if _id not in self.assessed_students:
-                        self.assessed_students[_id] = {}
-
-                    if date not in self.assessed_students[_id]:
-                        self.assessed_students[_id][date] = Assess(splitedItems[1], splitedItems[2])
-                        self.current_student = self.assessed_students[_id][date]
-                    bProcess = True
-
-                if bProcess:
-                    bProcess = not self.current_student.check(line)
+            self.assessed_students[_id].assess(problem)
+            os.chdir(eval_dir)
 
 
     def ext_trans(self,port, msg):
@@ -104,10 +86,10 @@ class Assessor(BehaviorModelExecutor):
             data = msg.retrieve()
             #print(data)
             home_dir = os.getcwd()
-            eval_dir = home_dir + "/assessment/" + data[3] # date
-            
-            self.process_daily_commits(data[0], data[1], data[3], eval_dir)
-        
+            eval_dir = os.path.join(home_dir, "assessment","repository", data[0], data[2]) # date
+            self.process_examination(data[0], eval_dir)
+            os.chdir(home_dir)
+
         if port == "report":
             data = msg.retrieve()
             self.asessment_file_path = data[0]
@@ -115,33 +97,21 @@ class Assessor(BehaviorModelExecutor):
             
 
     def output(self):
-
         df = pd.DataFrame('', index=[], columns=[])
         for key, value in self.assessed_students.items():
-            for k, v in value.items():
-                df.loc[key, k] = 'O'
+            for k, v in value.get_assessments().items():
+                df.loc[key, k] = v
 
-        print(df)
         df = df.fillna(value='X')
         df = df.sort_index(axis=1)
-        print(df)
-        #df.sort_index(axis=0)
-        #df.to_csv(self.asessment_file_path)
 
         #authorization
         gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
 
-        # Create empty dataframe
-        #df = pd.DataFrame()
-
-        # Create a column
-        #df['name'] = ['John', 'Steve', 'Sarah']
-
-        #open the google spreadsheet (where 'PY to Gsheet Test' is the name of my sheet)
-        sh = gc.open('SIT22005-201902')
+        sh = gc.open(GOOGLE_SPREADSHEET_NAME)
 
         #select the first sheet 
-        wks = sh[0]
+        wks = sh.worksheet('title','midterm')
 
         #update the first sheet with df, starting at cell B2. 
         wks.set_dataframe(df,(1,1), copy_index=True)
