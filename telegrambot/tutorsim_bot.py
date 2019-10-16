@@ -14,9 +14,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-DAILY, VERIFY_DAILY_ID, VERIFY_DAILY_PW = range(0, 3)
-MID01, VERIFY_MID01_ID, VERIFY_MID01_PW = range(3, 6)
-
 #authorization
 gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
 
@@ -30,6 +27,7 @@ user_status_map = {}
 def update_dataframe():
     wks = sh.worksheet('title','student_list')
     df = pd.DataFrame('', index=[], columns=[])
+
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
@@ -48,147 +46,81 @@ def help(update, context):
     menu += "/mid01 : Check Midterm01 Results\n"
     update.message.reply_text(menu)
 
-def daily(update, context):
-    user_status_map[update.effective_user] = DAILY
-    res = ""
-    res += "Please Reply Your ID."
-    update.message.reply_text(res)
-    return VERIFY_DAILY_ID
+def verify_get_functor(command, sheet, header, states):
 
-def verify_daily_id(update, context):
-    user_status_map[update.effective_user.id] = VERIFY_DAILY_ID
-    if update.effective_user.id not in user_message_map:
-        user_message_map[update.effective_user.id] = [update.message.text]
-    else:
-        user_message_map[update.effective_user.id].append(update.message.text)
-
-    res = ""
-    res += "Please Reply Your Password."
-    update.message.reply_text(res)
-    return VERIFY_DAILY_PW
-
-def verify_daily_pw(update, context):
-    user_status_map[update.effective_user.id] = VERIFY_DAILY_PW
-    print("id_check")
-    if not user_message_map[update.effective_user.id][-1].isdecimal():
-        update.message.reply_text('Invaild User')
-        user_message_map[update.effective_user.id] = []
-        response = ""
-        response += "You may start over\n"
-        response += "Press /help"
-        update.message.reply_text(res)
-        return ConversationHandler.END
-
-    print("pw_check")
-    res = stu_list_df.loc[ stu_list_df['ID'] == int(user_message_map[update.effective_user.id][-1]), "PW"]
-    if len(res.values) > 0:
-        query_res = res.values[0]
-    else:
-        update.message.reply_text('Invaild User')
-        user_message_map[update.effective_user.id] = []
-        res += "You may start over\n"
-        res += "Press /help"
-        update.message.reply_text(res)
-        return ConversationHandler.END
-
-    if update.message.text == str(query_res):
+    def initiator(update, context):
+        user_status_map[update.effective_user.id] = states[0]
         res = ""
-        res += "You are Verified"
+        res += "Please Reply Your ID."
         update.message.reply_text(res)
-        wks = sh.worksheet('title','Daily')
-        df = wks.get_as_df()
-        update.message.reply_text("your status is")
-        res = df.loc[df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
-        columns = list(res)
+        return states[1]
 
-        response = ""
-        f_str = "{0}: {1}\n"
-        for i in columns:
-            if i == 'ID':
-                response += f_str.format("Date","Result")
-                continue
-            response += f_str.format(i, str(res[i].values[0]))
+    def get_id(update, context):
+        user_status_map[update.effective_user.id] = states[1]
+        if update.effective_user.id not in user_message_map:
+            user_message_map[update.effective_user.id] = [update.message.text]
+        else:
+            user_message_map[update.effective_user.id].append(update.message.text)
 
-        update.message.reply_text(response)
-        user_message_map[update.effective_user.id] = []
-        return ConversationHandler.END 
-    else:
-        res = "You are not Verified"
-        update.message.reply_text(res)
-        user_message_map[update.effective_user.id] = []
-        return ConversationHandler.END
-
-def mid01(update, context):
-    user_status_map[update.effective_user] = MID01
-    res = ""
-    res += "Please Reply Your ID."
-    update.message.reply_text(res)
-    return VERIFY_MID01_ID
-
-def verify_mid01_id(update, context):
-    user_status_map[update.effective_user.id] = VERIFY_MID01_ID
-    if update.effective_user.id not in user_message_map:
-        user_message_map[update.effective_user.id] = [update.message.text]
-    else:
-        user_message_map[update.effective_user.id].append(update.message.text)
-
-    res = ""
-    res += "Please Reply Your Password."
-    update.message.reply_text(res)
-    return VERIFY_MID01_PW
-
-def verify_mid01_pw(update, context):
-    user_status_map[update.effective_user.id] = VERIFY_MID01_PW
-    print("id_check")
-    if not user_message_map[update.effective_user.id][-1].isdecimal():
-        update.message.reply_text('Invaild User')
-        user_message_map[update.effective_user.id] = []
-        response = ""
-        response += "You may start over\n"
-        response += "Press /help"
-        update.message.reply_text(res)
-        return ConversationHandler.END
-
-    print("pw_check")
-    res = stu_list_df.loc[ stu_list_df['ID'] == int(user_message_map[update.effective_user.id][-1]), "PW"]
-    print(int(user_message_map[update.effective_user.id][-1]))
-    
-    if len(res.values) > 0:
-        query_res = res.values[0]
-    else:
-        update.message.reply_text('Invaild User')
-        user_message_map[update.effective_user.id] = []
-        res += "You may start over\n"
-        res += "Press /help"
-        update.message.reply_text(res)
-        return ConversationHandler.END
-
-    if update.message.text == str(query_res):
         res = ""
-        res += "You are Verified"
+        res += "Please Reply Your Password."
         update.message.reply_text(res)
-        wks = sh.worksheet('title','midterm01')
-        df = wks.get_as_df()
-        update.message.reply_text("your status is")
-        res = df.loc[df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
-        columns = list(res)
+        return states[2]
 
-        response = ""
-        f_str = "{0}: {1}\n"
-        for i in columns:
-            if i == 'ID':
-                response += f_str.format("Problem","Result")
-                continue
-            response += f_str.format(i, str(res[i].values[0]))
+    def check_and_get(update, context):
+        user_status_map[update.effective_user.id] = states[2]
+        if not user_message_map[update.effective_user.id][-1].isdecimal():
+            update.message.reply_text('Invaild User')
+            user_message_map[update.effective_user.id] = []
+            response = ""
+            response += "You may start over\n"
+            response += "Press /help"
+            update.message.reply_text(res)
+            return ConversationHandler.END
 
-        update.message.reply_text(response)
-        user_message_map[update.effective_user.id] = []
-        return ConversationHandler.END 
-    else:
-        res = "You are not Verified"
-        update.message.reply_text(res)
-        user_message_map[update.effective_user.id] = []
-        return ConversationHandler.END
+        res = stu_list_df.loc[ stu_list_df['ID'] == int(user_message_map[update.effective_user.id][-1]), "PW"]
+        if len(res.values) > 0:
+            query_res = res.values[0]
+        else:
+            update.message.reply_text('Invaild User')
+            user_message_map[update.effective_user.id] = []
+            res += "You may start over\n"
+            res += "Press /help"
+            update.message.reply_text(res)
+            return ConversationHandler.END
+
+        if update.message.text == str(query_res):
+            res = ""
+            res += "You are Verified"
+            update.message.reply_text(res)
+            wks = sh.worksheet('title', sheet)
+            df = wks.get_as_df()
+            update.message.reply_text("your status is")
+            res = df.loc[df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
+            columns = list(res)
+
+            response = ""
+            f_str = "{0}: {1}\n"
+            for i in columns:
+                if i == 'ID':
+                    response += f_str.format(header[0], header[1])
+                    continue
+                response += f_str.format(i, str(res[i].values[0]))
+
+            update.message.reply_text(response)
+            user_message_map[update.effective_user.id] = []
+            return ConversationHandler.END 
+        else:
+            res = "You are not Verified"
+            update.message.reply_text(res)
+            user_message_map[update.effective_user.id] = []
+            return ConversationHandler.END
+
+    Command = CommandHandler(command, initiator)
+    Message = {}
+    Message[states[1]] = [MessageHandler(Filters.text, get_id)]
+    Message[states[2]] = [MessageHandler(Filters.text, check_and_get)]
+    return (Command, Message)
 
 def error(update, context):
     """Log Errors caused by Updates."""
@@ -211,21 +143,19 @@ def main():
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('daily', daily), CommandHandler('mid01', mid01)],
+    entry_points = []
+    states = {}
 
-        states={
-            VERIFY_DAILY_ID: [MessageHandler(Filters.text, verify_daily_id)],
-            VERIFY_DAILY_PW: [MessageHandler(Filters.text, verify_daily_pw)],
+    for menu in CHATBOT_MENU:    
+        out = verify_get_functor(menu[0], menu[1], menu[2], menu[3])
+        entry_points.append(out[0])
+        for key, value in out[1].items():
+            states[key] = value
 
-            VERIFY_MID01_ID: [MessageHandler(Filters.text, verify_mid01_id)],
-            VERIFY_MID01_PW: [MessageHandler(Filters.text, verify_mid01_pw)],
-        },
+    conv_handler = ConversationHandler(entry_points=entry_points, 
+                                        states=states, 
+                                        fallbacks=[CommandHandler('cancel', cancel)])
 
-        fallbacks=[CommandHandler('cancel', cancel)]
-    )
-    # on different commands - answer in Telegram
-    #dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     #dp.add_handler(CommandHandler("daily", daily))
     dp.add_handler(conv_handler)
