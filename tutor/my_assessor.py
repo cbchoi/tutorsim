@@ -111,7 +111,7 @@ class Assessor(BehaviorModelExecutor):
         sh = gc.open(GOOGLE_SPREADSHEET_NAME)
 
         #select the first sheet 
-        wks = sh.worksheet('title','midterm')
+        wks = sh.worksheet('title','midterm01')
 
         #update the first sheet with df, starting at cell B2. 
         wks.set_dataframe(df,(1,1), copy_index=True)

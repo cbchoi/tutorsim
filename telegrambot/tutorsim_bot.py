@@ -14,7 +14,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-DAILY, VERIFY_DAILY_ID, VERIFY_DAILY_PW, VERIFIED_DAILY = range(4)
+DAILY, VERIFY_DAILY_ID, VERIFY_DAILY_PW = range(0, 3)
+MID01, VERIFY_MID01_ID, VERIFY_MID01_PW = range(3, 6)
 
 #authorization
 gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
@@ -44,6 +45,7 @@ def help(update, context):
     menu = ""
     menu += "tutorsim Menu\n"
     menu += "/daily : Check Daily Commit Results\n"
+    menu += "/mid01 : Check Midterm01 Results\n"
     update.message.reply_text(menu)
 
 def daily(update, context):
@@ -96,7 +98,7 @@ def verify_daily_pw(update, context):
         wks = sh.worksheet('title','Daily')
         df = wks.get_as_df()
         update.message.reply_text("your status is")
-        res = df.loc[stu_list_df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
+        res = df.loc[df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
         columns = list(res)
 
         response = ""
@@ -104,6 +106,78 @@ def verify_daily_pw(update, context):
         for i in columns:
             if i == 'ID':
                 response += f_str.format("Date","Result")
+                continue
+            response += f_str.format(i, str(res[i].values[0]))
+
+        update.message.reply_text(response)
+        user_message_map[update.effective_user.id] = []
+        return ConversationHandler.END 
+    else:
+        res = "You are not Verified"
+        update.message.reply_text(res)
+        user_message_map[update.effective_user.id] = []
+        return ConversationHandler.END
+
+def mid01(update, context):
+    user_status_map[update.effective_user] = MID01
+    res = ""
+    res += "Please Reply Your ID."
+    update.message.reply_text(res)
+    return VERIFY_MID01_ID
+
+def verify_mid01_id(update, context):
+    user_status_map[update.effective_user.id] = VERIFY_MID01_ID
+    if update.effective_user.id not in user_message_map:
+        user_message_map[update.effective_user.id] = [update.message.text]
+    else:
+        user_message_map[update.effective_user.id].append(update.message.text)
+
+    res = ""
+    res += "Please Reply Your Password."
+    update.message.reply_text(res)
+    return VERIFY_MID01_PW
+
+def verify_mid01_pw(update, context):
+    user_status_map[update.effective_user.id] = VERIFY_MID01_PW
+    print("id_check")
+    if not user_message_map[update.effective_user.id][-1].isdecimal():
+        update.message.reply_text('Invaild User')
+        user_message_map[update.effective_user.id] = []
+        response = ""
+        response += "You may start over\n"
+        response += "Press /help"
+        update.message.reply_text(res)
+        return ConversationHandler.END
+
+    print("pw_check")
+    res = stu_list_df.loc[ stu_list_df['ID'] == int(user_message_map[update.effective_user.id][-1]), "PW"]
+    print(int(user_message_map[update.effective_user.id][-1]))
+    
+    if len(res.values) > 0:
+        query_res = res.values[0]
+    else:
+        update.message.reply_text('Invaild User')
+        user_message_map[update.effective_user.id] = []
+        res += "You may start over\n"
+        res += "Press /help"
+        update.message.reply_text(res)
+        return ConversationHandler.END
+
+    if update.message.text == str(query_res):
+        res = ""
+        res += "You are Verified"
+        update.message.reply_text(res)
+        wks = sh.worksheet('title','midterm01')
+        df = wks.get_as_df()
+        update.message.reply_text("your status is")
+        res = df.loc[df['ID'] == int(user_message_map[update.effective_user.id][-1]), :]
+        columns = list(res)
+
+        response = ""
+        f_str = "{0}: {1}\n"
+        for i in columns:
+            if i == 'ID':
+                response += f_str.format("Problem","Result")
                 continue
             response += f_str.format(i, str(res[i].values[0]))
 
@@ -138,12 +212,14 @@ def main():
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('daily', daily)],
+        entry_points=[CommandHandler('daily', daily), CommandHandler('mid01', mid01)],
 
         states={
             VERIFY_DAILY_ID: [MessageHandler(Filters.text, verify_daily_id)],
             VERIFY_DAILY_PW: [MessageHandler(Filters.text, verify_daily_pw)],
-            VERIFIED_DAILY: [MessageHandler(Filters.text, verify_daily_pw)],
+
+            VERIFY_MID01_ID: [MessageHandler(Filters.text, verify_mid01_id)],
+            VERIFY_MID01_PW: [MessageHandler(Filters.text, verify_mid01_pw)],
         },
 
         fallbacks=[CommandHandler('cancel', cancel)]
