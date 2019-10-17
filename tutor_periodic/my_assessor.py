@@ -122,27 +122,17 @@ class Assessor(BehaviorModelExecutor):
         #print(df)
         df = df.fillna(value='X')
         df = df.sort_index(axis=1)
-        #print(df)
-        #df.sort_index(axis=0)
-        #df.to_csv(self.asessment_file_path)
 
         #authorization
         gc = pygsheets.authorize(service_file=GOOGLE_SERVICE_KEY)
 
-        # Create empty dataframe
-        #df = pd.DataFrame()
-
-        # Create a column
-        #df['name'] = ['John', 'Steve', 'Sarah']
-
-        #open the google spreadsheet (where 'PY to Gsheet Test' is the name of my sheet)
         sh = gc.open('SIT22005-201902')
 
-        #select the first sheet 
-        wks = sh[0]
+        wks = sh.worksheet('title', 'Daily')
 
         #update the first sheet with df, starting at cell B2. 
         wks.set_dataframe(df,(1,1), copy_index=True)
+        wks.update_value('A1', 'ID')
         return None
 
     def int_trans(self):
