@@ -1,2 +1,3 @@
-(cd /data/rohi/tutorsim && git pull)
-python3 /data/rohi/tutorsim/telegrambot/tutorsim_bot.py
+#!/bin/bash
+(cd /data/tutorsim && git pull)
+python3 /data/tutorsim/telegrambot/tutorsim_bot.py

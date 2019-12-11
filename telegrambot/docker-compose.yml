@@ -1,0 +1,12 @@
+version: '2.1'
+
+services: 
+  telegram: 
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+
+    volumes:
+      - ./instance:/data/tutorsim/telegrambot/instance
+    container_name: tutorbot
+    command: /data/run.script
