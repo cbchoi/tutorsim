@@ -1,0 +1,2 @@
+(cd /data/rohi/tutorsim && git pull)
+python3 /data/rohi/tutorsim/telegrambot/tutorsim_bot.py

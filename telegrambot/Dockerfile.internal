@@ -10,9 +10,9 @@ RUN apt update && apt install -y python3 \
 
 WORKDIR /data
 RUN git clone http://github.com/cbchoi/tutorsim.git
-
-WORKDIR /data/tutorsim
 RUN git pull
+
+WORKDIR /data/tutorsim/telegrambot
 RUN pip3 install -r /data/tutorsim/telegrambot/requirements.txt
 
 VOLUME ["/data", "/data/tutorsim/telegrambot/instance"]

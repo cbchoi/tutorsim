@@ -133,6 +133,20 @@ def cancel(update, context):
     update.message.reply_text(res)
     return ConversationHandler.END
 
+def generate_menu(command_lst):
+    idx_start = 0
+    idx_end = 3
+
+    CHATBOT_MENU = []
+
+    for command in command_lst:
+        key, sheet, heading = command
+        CHATBOT_MENU.append((key, sheet, heading, range(idx_start, idx_end)))
+        idx_start += 3
+        idx_end += 3
+
+    return CHATBOT_MENU
+
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
@@ -146,6 +160,7 @@ def main():
     entry_points = []
     states = {}
 
+    CHATBOT_MENU = generate_menu(COMMAND_LST)
     for menu in CHATBOT_MENU:    
         out = verify_get_functor(menu[0], menu[1], menu[2], menu[3])
         entry_points.append(out[0])
