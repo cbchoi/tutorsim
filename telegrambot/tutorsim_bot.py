@@ -142,7 +142,7 @@ def generate_menu(command_lst):
     for command in command_lst:
         key, sheet, heading = command
         CHATBOT_MENU.append((key, sheet, heading, range(idx_start, idx_end)))
-        menu += "/"+ key + ": get " + sheet + ' data'
+        menu += "/"+ key + ": get " + sheet + ' data' + "\n"
         idx_start += 3
         idx_end += 3
 
