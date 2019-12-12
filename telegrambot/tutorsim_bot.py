@@ -8,6 +8,7 @@ import pygsheets
 import pandas as pd
 import numpy as np
 
+menu = ""
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -35,15 +36,13 @@ def start(update, context):
     menu = ""
     menu += "Hello, I am tutorsim.\n"
     menu += "Followings are the menu which you can select.\n"
-    menu += "/daily : Check Daily Commit Results\n"
     update.message.reply_text(menu)
 
 
 def help(update, context):
-    menu = ""
-    menu += "tutorsim Menu\n"
-    menu += "/daily : Check Daily Commit Results\n"
-    menu += "/mid01 : Check Midterm01 Results\n"
+    global menu
+    l_menu = "tutorsim Menu\n"
+    l_menu += menu
     update.message.reply_text(menu)
 
 def verify_get_functor(command, sheet, header, states):
@@ -134,6 +133,7 @@ def cancel(update, context):
     return ConversationHandler.END
 
 def generate_menu(command_lst):
+    global menu
     idx_start = 0
     idx_end = 3
 
@@ -142,6 +142,7 @@ def generate_menu(command_lst):
     for command in command_lst:
         key, sheet, heading = command
         CHATBOT_MENU.append((key, sheet, heading, range(idx_start, idx_end)))
+        menu += "/"+ key + ": get " + sheet + ' data'
         idx_start += 3
         idx_end += 3
 
